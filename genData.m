@@ -190,16 +190,18 @@ x=theta;
 for component=1:n;
     y=lambda(component,:);
     [C(:,:,:,component),d(:,:,:,component),responsabilities(:,:,component),~, ~] = emgm_estimate(x,y,modes,emMaxIter,eps);
-    C_estimated = sort(reshape(C(:,:,:,component),size(C,1),size(C,3)))
+    C_estimated(:,:,component) = sort(reshape(C(:,:,:,component),size(C,1),size(C,3)));
 end
 
 % estimate cheating
 for component=1:n;
     y=lambda_tilde(component,:);
     [C_cheat(:,:,:,component),d_cheat(:,:,:,component),responsabilities_cheat(:,:,component),~, ~] = emgm_estimate(x,y,modes,emMaxIter,eps);
-    C_cheat_estimated = sort(reshape(C_cheat(:,:,:,component),size(C_cheat,1),size(C_cheat,3)))
+    C_cheat_estimated(:,:,component) = sort(reshape(C_cheat(:,:,:,component),size(C_cheat,1),size(C_cheat,3)));
 end
 
+C_estimated
+C_cheat_estimated
 
 %%
 rgb=@(x,y,z) [x, y,z]/255;
