@@ -182,9 +182,10 @@ end
 T = (10*rand([size(lambda,1) size(lambda,1) M]));
 % T = 20*eye(n)
 % T = diag(fix(20*rand(1,n)));
-T = (T+T')/2;
 % T=T+2*eye(size(lambda,1))
 for i=M:-1:1
+    T(:,:,i) = (T(:,:,i)+T(:,:,i)')/2;
+    lambda_tilde(:,:,i) = T(:,:,i)*lambda(:,:,i);
 end
 
 if(doplots==1 && size(theta,1)==2)
