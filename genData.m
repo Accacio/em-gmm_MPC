@@ -115,6 +115,9 @@ values=linspace(0,.001,n^3);
 [ v{1:n} ]=ndgrid(values);
 theta(:,:) =cell2mat(cellfun(@(x) reshape(x,[],1),v,'UniformOutput',0))';
 
+lambda=zeros(n,size(theta,2),M);
+u=zeros(n,M);
+J=zeros(n,M);
 for i=1:M
     for cur_theta=1:size(theta,2)
         % QUADPROG(H,f,A,b,Aeq,beq,LB,UB,X0)
