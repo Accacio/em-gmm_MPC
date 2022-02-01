@@ -86,6 +86,7 @@ for i=M:-1:1
 end
 clear -regexp [^f].*_fun % Delete all functions but f_fun
 
+%= Initial state and reference
 X0(:,1) = [21 3.2]';
 X0(:,2) = [20. 6.]';
 Wt(:,1) = [26]'; %#ok
