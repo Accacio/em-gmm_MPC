@@ -78,7 +78,7 @@ f_fun=@(Cmat,Mmat,Q,xt,Wt) Cmat'*Q*(Mmat*xt-Wt);
 for i=1:M
     Mmat(:,:,i)=Mmat_fun(dsys(:,:,1,i),n);
     Cmat(:,:,i)=Cmat_fun(dsys(:,:,1,i),n);
-    H(:,:,i)=H_fun(Cmat(:,:,i),Q(:,:,1),R(:,:,1));
+    H(:,:,i)=H_fun(Cmat(:,:,i),Q(:,:,i),R(:,:,i));
 end
 clear -regexp [^f].*_fun % Delete all functions but f_fun
 
