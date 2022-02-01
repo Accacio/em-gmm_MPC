@@ -209,7 +209,7 @@ end
 %% === ESTIMATION ===
 PI=pi;
 emMaxIter=500;
-modes=n^2;
+modes=2^n;
 maxErr=1e-8;
 x=theta;
 
