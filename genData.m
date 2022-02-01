@@ -46,7 +46,7 @@ dsys=c2d(csys,Te);
 n=2; %= Prediction horizon
 
 %= Gains Q and R for $\sum_{j=1}^n \|v\|^2_{Q}+\|u\|^2_{R}$
-for i=1:M
+for i=M:-1:1 % make it backward to "preallocate"
     Q(:,:,i)=eye(n*size(dsys(:,:,1,i).C,1)); % no x no
     R(:,:,i)=eye(n*size(dsys(:,:,1,i).B,2)); % nc x nc
 end
@@ -79,7 +79,7 @@ f_fun=@(Cmat,Mmat,Q,xt,Wt) Cmat'*Q*(Mmat*xt-Wt);
 
 
 %= Prediction matrices for the systems
-for i=1:M
+for i=M:-1:1
     Mmat(:,:,i)=Mmat_fun(dsys(:,:,1,i),n);
     Cmat(:,:,i)=Cmat_fun(dsys(:,:,1,i),n);
     H(:,:,i)=H_fun(Cmat(:,:,i),Q(:,:,i),R(:,:,i));
@@ -91,7 +91,7 @@ X0(:,2) = [20. 6.]';
 Wt(:,1) = [26]'; %#ok
 Wt(:,2) = [21]'; %#ok
 
-for i=1:M
+for i=M:-1:1
     f(:,:,i)=f_fun(Cmat(:,:,i),Mmat(:,:,i),Q(:,:,1),X0(:,i),Wt(:,i));
 end
 
@@ -183,8 +183,7 @@ T = (10*rand([size(lambda,1) size(lambda,1) M]));
 % T = diag(fix(20*rand(1,n)));
 T = (T+T')/2;
 % T=T+2*eye(size(lambda,1))
-for i=1:M
-    lambda_tilde(:,:,i) = T*lambda(:,:,i);
+for i=M:-1:1
 end
 
 if(doplots==1 && size(theta,1)==2)
