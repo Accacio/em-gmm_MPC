@@ -1,23 +1,29 @@
-function responsabilities = calculate_responsabilities(x, y, C, d, Sigma, pi)
-% CALCULATE_RESPONSABILITIES -
+function Responsabilities = calculate_responsabilities(x, y, Phi, Sigma, Pi)
+    %% modes x N responsability matrix
+    modes=size(Phi,1);
+    [n, N]=size(x);
 
-  M=size(d,3);
-  N=size(x,3);
-  respNum =zeros(size(x,2),M);
-  %= calculate numerator for each mode
-  for i=1:M
-    w=pi(i)*sqrt(Sigma(:,:,i));
-    lktemp=diag(y-[C(:,:,i)'*x+d(:,:,i)]);
-    SigmaInvMat=kron(eye(N),Sigma(:,:,i)\1);
-    lk=diag(-1/2*lktemp*SigmaInvMat*lktemp');
+    respNum = zeros(size(x,2),modes);
 
-    %= logsumexp trick see: https://www.cs.bgu.ac.il/~cv202/wiki.files/logsumexp_trick.pdf
-    a=max(lk)+log(w);
-    likelihood_mod=exp(lk+log(w)-a);
-    % likelihood=mvnpdf(y',(C(:,i)'*x+d(:,i))',Sigma(:,:,i));
-    respNum(:,i)=likelihood_mod;
-  end
-  normalizing_constant=sum(respNum ,2);
 
-  responsabilities =(respNum./normalizing_constant)';
+    A=kron(ones(n,1),eye(n));
+    B=kron(eye(N),ones(1,n));
+    C=kron(repmat(eye(n),1,N),ones(n,1));
+    x_lin=sparse([(A*x*B).*C;kron(repmat(eye(n),1,N),ones(1,1))]);
+    y_cell = cellfun(@(x) x',mat2cell(y',ones(1,N))','UniformOutput',0);
+    y_diag=sparse(blkdiag(y_cell{:}));
+    %= calculate numerator for each mode
+    % for i=1:modes
+    for i=1:modes
+        y_lin=reshape(x_lin'*-Phi(i,:)',n,N);
+        y_lin_cell = cellfun(@(x) x',mat2cell(y_lin',ones(1,N))','UniformOutput',0);
+        y_lin_diag=sparse(blkdiag(y_lin_cell{:}));
+        err_diag=y_diag-y_lin_diag;
+        SigmaInvMat=kron(sparse(eye(N)),sparse(Sigma(:,:,i)\eye(n)));
+
+        respNum(:,i)=sparse(Pi(1,i)*(1/(2*pi)^(n/2))*(1/sqrt(det(Sigma(:,:,i))))*exp(-1/2*max(err_diag'*SigmaInvMat*err_diag))');
+    end
+    normalizing_constant=sum(respNum,2);
+    Responsabilities =(respNum./normalizing_constant)';
+
 end

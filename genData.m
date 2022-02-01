@@ -105,12 +105,8 @@ umax(1:2)=inf;
 
 %= Generate n-dimensional rectangular grid for combinations
 % see https://accacio.gitlab.io/blog/matlab_combinations/
-% values=-4:.5:4;
-% values=-10:1:10;
-% values=-1:.1:1;
-values=linspace(0,.001,n^3);
-% values=.2:.1:1.2;
-% values=max(umin(1),values);
+values=linspace(0,.1,2);
+
 
 [ v{1:n} ]=ndgrid(values);
 theta(:,:) =cell2mat(cellfun(@(x) reshape(x,[],1),v,'UniformOutput',0))';
@@ -207,68 +203,59 @@ end
 end
 
 %% === ESTIMATION ===
-PI=pi;
 modes=2^n;
+PI=repmat(1/modes,1,modes);
 emMaxIter=100;
 maxErr=1e-8;
-x=theta;
+X=theta;
+Y=lambda(:,:,1);
 
-%= Estimate normal
-for component=1:n;
-    y=lambda(component,:);
-    [C(:,:,:,component),d(:,:,:,component),responsabilities(:,:,component),~, ~] = emgm_estimate (x,y,[],[],modes,emMaxIter,maxErr);
-    C_estimated(:,:,component) = -reshape(C(:,:,:,component),size(C,1),size(C,3));
-    d_estimated(:,:,component) = -reshape(d(:,:,:,component),size(d,1),size(d,3));
-end
-return
-for component=1:n
-    index_of_zero=find(sum(theta==zeros(size(theta)))==n);
-    % index_of_zero=1;
-    [~,z_hat_zero]=max(responsabilities(:,index_of_zero,component));
-    H_est(component,:,i)=C_estimated(:,z_hat_zero,component)';
-    f_est(component,:,i)=d_estimated(:,z_hat_zero,component);
-end
-H_est(:,:,i)
-H(:,:,1)
-f_est(:,:,i)
-f(:,:,1)
+Phi_init=20*rand(modes,n^2+n);
 
-%= Estimate cheating
-for component=1:n;
-    y=lambda_tilde(component,:);
+%= Estimate normal behavior
+% [Phi,Responsabilities,~, ~] = emgm_Nestimate (X,Y,[],modes,emMaxIter,maxErr);
+[Phi,Responsabilities,~, ~] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+Estimated=Phi(1,:);
+Real=[H(:)' f(:)'];
 
-    % Cinit= reshape(repmat(paren(T*H_est,1,':')',1,modes),2,1,modes)+rand(2,1,modes);
-    % dinit = reshape(repmat(paren(T*f_est,1,':')',1,modes),1,1,modes)+rand(1,1,modes);
-    % Cinit= reshape(repmat(paren(T*H_est,1,':')',1,modes),2,1,modes);
-    % dinit = reshape(repmat(paren(T*f_est,1,':')',1,modes),1,1,modes);
+% NOTE(accacio): only if values have zero
+index_of_zero=find(sum(theta==zeros(size(theta)))==n);
+% index_of_zero=1;
+[~, z_hat_zero]=max(Responsabilities(:,index_of_zero)); %#ok
+zero_params=Phi(z_hat_zero,:);
+H_est=reshape(zero_params(1:n^2),n,n)';
+f_est=zero_params(n^2+1:end)';
 
-    % Cinit=C(:,:,:,component);
-    % dinit=d(:,:,:,component);
-    % [C_cheat(:,:,:,component),d_cheat(:,:,:,component),responsabilities_cheat(:,:,component),~, ~] = emgm_estimate (x,y,Cinit,dinit,modes,emMaxIter,maxErr);
-    [C_cheat(:,:,:,component),d_cheat(:,:,:,component),responsabilities_cheat(:,:,component),~, ~] = emgm_estimate (x,y,[],[],modes,emMaxIter,maxErr);
-    C_cheat_estimated(:,:,component) = -reshape(C_cheat(:,:,:,component),size(C_cheat,1),size(C_cheat,3));
-    d_cheat_estimated(:,:,component) = -reshape(d_cheat(:,:,:,component),size(d_cheat,1),size(C_cheat,3));
-end
-% TODO(accacio): should not necessarily be zero, can be any theta < -P\s
-for component=1:n
-    index_of_zero=find(sum(theta==zeros(size(theta)))==n);
-    % index_of_zero=1;
-    [~,z_hat_zero]=max(responsabilities(:,index_of_zero,component));
-    H_cheat_est(component,:,i)=C_cheat_estimated(:,z_hat_zero,component)';
-    f_cheat_est(component,:,i)=d_cheat_estimated(:,z_hat_zero,component);
-end
+display(H_est);
+display(H);
+display(f_est);
+display(f);
 
-H_cheat_est(:,:,i)
-T*H(:,:,1)
-f_cheat_est(:,:,i)
-T*f(:,:,1)
+%= Estimate selfish behavior
+Y=lambda_tilde(:,:,1);
+[Phi_tilde,Responsabilities_tilde,~, Sigma_tilde] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+Estimated_tilde=Phi_tilde(1,:);
+Real_tilde=[(paren(T(:,:,1)*H(:,:,1),':'))' (paren(T(:,:,1)*f(:,:,1),':'))'];
 
 
-% C_estimated
-% C_cheat_estimated
+% NOTE(accacio): only if values have zero
+index_of_zero=find(sum(theta==zeros(size(theta)))==n);
+% index_of_zero=1;
 
-invT_est=H*inv(H_cheat_est)
-invT=inv(T)
+[~, z_hat_zero_tilde]=max(Responsabilities_tilde(:,index_of_zero));
+zero_params_tilde=Phi_tilde(z_hat_zero_tilde,:);
+H_est_tilde=reshape(zero_params_tilde(1:n^2),n,n)';
+display(H_est);
+display(T(:,:,1)*H(:,:,1));
+f_est=zero_params_tilde((n^2+1):end)';
+display(f_est);
+display(T(:,:,1)*f(:,:,1));
+
+
+invT_est=H(:,:,1)/(H_est_tilde);
+invT=inv(T(:,:,1));
+display(invT_est);
+display(invT);
 toc
 
 %%
