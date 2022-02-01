@@ -82,9 +82,9 @@ for i=1:M
 end
 clear -regexp [^f].*_fun % Delete all functions but f_fun
 
-X0(:,1) = [19 3.2]';
+X0(:,1) = [21 3.2]';
 X0(:,2) = [20. 6.]';
-Wt(:,1) = [21]';
+Wt(:,1) = [23]';
 Wt(:,2) = [21]';
 
 for i=1:M
