@@ -42,8 +42,8 @@ dsys=c2d(csys,Te);
 %%%
 %% Set functions for MPC
 
-% Prediction horizon
-n=2;
+
+n=2; %= Prediction horizon
 
 %= Gains Q and R for $\sum_{j=1}^n \|v\|^2_{Q}+\|u\|^2_{R}$
 for i=1:M
