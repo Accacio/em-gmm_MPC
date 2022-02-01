@@ -208,8 +208,8 @@ end
 
 %% === ESTIMATION ===
 PI=pi;
-emMaxIter=500;
 modes=2^n;
+emMaxIter=100;
 maxErr=1e-8;
 x=theta;
 
