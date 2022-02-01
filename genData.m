@@ -176,7 +176,7 @@ end
 % u=ones(1,n);
 % [y,t,x]=lsim(dsys(:,:,1,2),[u(:,1) 0],0:Te:Te); % Update systems
 %%%
-%= Cheating influence on lambda
+%= Selfish behavior influence on lambda
 % let's suppose $\tilde{\vec{\lambda}}=T\vec{\lambda}$
 
 T = (10*rand([size(lambda,1) size(lambda,1) M]));
