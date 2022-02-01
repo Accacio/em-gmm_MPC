@@ -44,6 +44,13 @@ dsys=c2d(csys,Te);
 
 
 n=2; %= Prediction horizon
+% n=2; %~ 0.06s
+% n=3; %~ 0.09s
+% n=4; %~ 0.18s
+% n=5; %~ 0.4s
+% n=6; %~ 1.3s
+% n=7; %~ 6.2s
+% n=8; %~ 39.8s
 
 %= Gains Q and R for $\sum_{j=1}^n \|v\|^2_{Q}+\|u\|^2_{R}$
 for i=M:-1:1 % make it backward to "preallocate"
