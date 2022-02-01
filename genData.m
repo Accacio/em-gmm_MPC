@@ -27,7 +27,7 @@ Cair  = repmat(Cair_mean,1,M)+(-.5+rand(1,M));
 Cwalls = repmat(Cwalls_mean,1,M)+(-.5+rand(1,M));
 Roaia = repmat(Roaia_mean,1,M)+(-.5+rand(1,M));
 Riwia = repmat(Riwia_mean,1,M)+(-.5+rand(1,M));
-Rowoa = repmat(Rowoa_mean,1,M)+(-.5+rand(1,M));
+Rowoa = repmat(Rowoa_mean,1,M)+(-.5+rand(1,M)); %#ok
 
 %= Define systems using 3R2C
 for i=1:M
@@ -88,8 +88,8 @@ clear -regexp [^f].*_fun % Delete all functions but f_fun
 
 X0(:,1) = [21 3.2]';
 X0(:,2) = [20. 6.]';
-Wt(:,1) = [23]';
-Wt(:,2) = [21]';
+Wt(:,1) = [26]'; %#ok
+Wt(:,2) = [21]'; %#ok
 
 for i=1:M
     f(:,:,i)=f_fun(Cmat(:,:,i),Mmat(:,:,i),Q(:,:,1),X0(:,i),Wt(:,i));
