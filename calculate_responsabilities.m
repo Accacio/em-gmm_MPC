@@ -17,8 +17,7 @@ function responsabilities = calculate_responsabilities(x, y, C, d, Sigma, pi)
     % likelihood=mvnpdf(y',(C(:,i)'*x+d(:,i))',Sigma(:,:,i));
     respNum(:,i)=likelihood_mod;
   end
-  normalizing_constant=sum(respNum,2);
-  rate=(respNum./normalizing_constant)';
+  normalizing_constant=sum(respNum ,2);
 
-  responsabilities = rate;
+  responsabilities =(respNum./normalizing_constant)';
 end
