@@ -3,6 +3,9 @@
 close all
 clear
 warning off
+
+doplots=0;
+
 %%%
 %% Define systems
 
@@ -128,11 +131,10 @@ for i=1:M
         lambda(:,cur_theta,i)=l.ineqlin;
     end
 end
-
 %%%
 %% Plots
 
-if(size(theta,1)==2)
+if(doplots==1 && size(theta,1)==2 )
 for i=1:M
     figure
     for j=1:size(lambda,1)
@@ -184,7 +186,7 @@ for i=1:M
     lambda_tilde(:,:,i) = T*lambda(:,:,i);
 end
 
-if(size(theta,1)==2)
+if(doplots==1 && size(theta,1)==2)
 for i=1:M
     figure
     for j=1:size(lambda,1)
@@ -271,9 +273,8 @@ colors={ rgb( 84, 177, 159), ...
          rgb(128,  63, 189), ...
        };
 
-% Plot normal Behavior
-
-if(size(theta,1)==2)
+%= Plot normal Behavior
+if(doplots ==1 && size(theta,1)==2)
 figure
 for component=1:n
     y=lambda(component,:);
@@ -287,8 +288,8 @@ for component=1:n
 end
 end
 
-% Plot cheating
-if(size(theta,1)==2)
+%= Plot cheating
+if(doplots ==1 && size(theta,1)==2)
 figure
 for component=1:n
     y=lambda_tilde(component,:);
