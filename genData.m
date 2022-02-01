@@ -92,15 +92,21 @@ for i=1:M
 end
 
 % TODO(accacio): Use yalmip
-umin(1:2)=-inf;
+% umin(1:2)=-inf;
+umin(1:2)=0;
 umax(1:2)=inf;
 %%%
 %% Get Lambdas
 
 %= Generate n-dimensional rectangular grid for combinations
 % see https://accacio.gitlab.io/blog/matlab_combinations/
-% values=0:.05:4;
-values=-10:1:10;
+% values=-4:.5:4;
+% values=-10:1:10;
+% values=-1:.1:1;
+values=linspace(0,.001,n^3);
+% values=.2:.1:1.2;
+% values=max(umin(1),values);
+
 [ v{1:n} ]=ndgrid(values);
 theta(:,:) =cell2mat(cellfun(@(x) reshape(x,[],1),v,'UniformOutput',0))';
 
@@ -113,12 +119,18 @@ for i=1:M
                                           umin(:,i)*ones(ni*n,1), ...  % Lower Bound
                                           umax(:,i)*ones(ni*n,1), ...  % Upper Bound
                                           [], options);
+        % [u(:,i) ,J(:,i),~,~,l] = quadprog(H(:,:,i), f(:,:,i), ...
+        %                                   eye(ni*n), min(max(theta(:,cur_theta),umin(:,i)),umax(:,i)), ...
+        %                                   [], [], ...
+        %                                   umin(:,i)*ones(ni*n,1), ...  % Lower Bound
+        %                                   umax(:,i)*ones(ni*n,1), ...  % Upper Bound
+        %                                   [], options);
         lambda(:,cur_theta,i)=l.ineqlin;
     end
 end
 
 %%%
-%% Plot
+%% Plots
 
 for i=1:M
     figure
