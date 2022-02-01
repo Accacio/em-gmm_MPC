@@ -30,7 +30,7 @@ Riwia = repmat(Riwia_mean,1,M)+(-.5+rand(1,M));
 Rowoa = repmat(Rowoa_mean,1,M)+(-.5+rand(1,M)); %#ok
 
 %= Define systems using 3R2C
-for i=1:M
+for i=M:-1:1 % make it backward to "preallocate"
     csys(:,:,1,i)=model_3R2C(Roaia(i),Riwia(i),Rowoa(i),Cwalls(i),Cair(i));
 end
 ni=size(csys.B(:,:,1,1),2);
