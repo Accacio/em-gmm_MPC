@@ -132,6 +132,7 @@ end
 %%%
 %% Plots
 
+if(size(theta,1)==2)
 for i=1:M
     figure
     for j=1:size(lambda,1)
@@ -143,6 +144,7 @@ for i=1:M
         xlabel('$\theta_1$','interpreter','latex')
         ylabel('$\theta_2$','interpreter','latex')
     end
+end
 end
 
 % Get only lambdas different from zero
@@ -270,6 +272,8 @@ colors={ rgb(84, 177, 159),
        };
 
 % Plot normal Behavior
+
+if(size(theta,1)==2)
 figure
 for component=1:n
     y=lambda(component,:);
@@ -281,8 +285,10 @@ for component=1:n
     xlabel('$\theta_1$','interpreter','latex')
     ylabel('$\theta_2$','interpreter','latex')
 end
+end
 
 % Plot cheating
+if(size(theta,1)==2)
 figure
 for component=1:n
     y=lambda_tilde(component,:);
@@ -293,4 +299,5 @@ for component=1:n
     title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
     xlabel('$\theta_1$','interpreter','latex')
     ylabel('$\theta_2$','interpreter','latex')
+end
 end
