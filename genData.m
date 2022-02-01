@@ -277,11 +277,11 @@ if(size(theta,1)==2)
 figure
 for component=1:n
     y=lambda(component,:);
-    sgtitle(['EM-GM Using MPC Data (Normal Behavior)'],'interpreter','latex')
+    sgtitle('EM-GM Using MPC Data (Normal Behavior)','interpreter','latex')
     subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
     plot_responsibles(x, y, responsabilities(:,:,component), C, d, colors);
     view(135,30)
-    title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
+    title(['$\lambda_{' num2str(component) '}$' ],'interpreter','latex')
     xlabel('$\theta_1$','interpreter','latex')
     ylabel('$\theta_2$','interpreter','latex')
 end
@@ -292,7 +292,7 @@ if(size(theta,1)==2)
 figure
 for component=1:n
     y=lambda_tilde(component,:);
-    sgtitle(['EM-GM Using MPC Data (Cheating)'],'interpreter','latex')
+    sgtitle('EM-GM Using MPC Data (Cheating)','interpreter','latex');
     subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
     plot_responsibles(x, y, responsabilities_cheat(:,:,component), C_cheat, d_cheat, colors);
     view(135,30)
