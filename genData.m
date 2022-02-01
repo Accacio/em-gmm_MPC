@@ -1,5 +1,6 @@
 %% === GENERATION ===
 %% Clean variables
+tic
 close all
 clear
 warning off
@@ -264,6 +265,7 @@ T*f(:,:,1)
 
 invT_est=H*inv(H_cheat_est)
 invT=inv(T)
+toc
 
 %%
 rgb=@(x,y,z) [x, y,z]/255;
