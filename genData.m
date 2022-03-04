@@ -5,14 +5,14 @@ close all
 clear
 warning off
 
-doplots=0;
-
+doplots=1; %= do plots?
 %%%
 %% Define systems
 
 % Optimization settings
 options = optimset('Display', 'off');
 % options = [];
+% rand('seed',2);
 
 %= Number of systems
 M=1;
@@ -21,7 +21,7 @@ Cair_mean=8;
 Cwalls_mean=5;
 Roaia_mean=5;
 Riwia_mean=2.5;
-Rowoa_mean=1;
+Rowoa_mean=1.1;
 
 Cair  = repmat(Cair_mean,1,M)+(-.5+rand(1,M));
 Cwalls = repmat(Cwalls_mean,1,M)+(-.5+rand(1,M));
@@ -96,7 +96,7 @@ clear -regexp [^f].*_fun % Delete all functions but f_fun
 %= Initial state and reference
 X0(:,1) = [21 3.2]';
 X0(:,2) = [20. 6.]';
-Wt(:,1) = [26]'; %#ok
+Wt(:,1) = [20]'; %#ok
 Wt(:,2) = [21]'; %#ok
 
 for i=M:-1:1
@@ -104,18 +104,27 @@ for i=M:-1:1
 end
 
 % TODO(accacio): Use yalmip
-% umin(1:2)=-inf;
-umin(1:2)=0;
+umin(1:2)=-inf;
+% umin(1:2)=0;
 umax(1:2)=inf;
+
+Gamma=eye(ni);
+Gamma_bar=kron(eye(n),Gamma);
+
 %%%
 %% Get Lambdas
 
 %= Generate n-dimensional rectangular grid for combinations
 % see https://accacio.gitlab.io/blog/matlab_combinations/
-values=linspace(0,.1,2);
+% values={linspace(0,.1,2)};
+values={linspace(0,.1,10)};
+% values={linspace(0,1,20)}; % both active
+% values={linspace(0,1,20), linspace(3,5,20),}; % 1 active
+% values={linspace(4,10,20),linspace(0,1,20)}; % 2 active
+% values={linspace(0,3,20), linspace(10,30,20),};
 
-
-[ v{1:n} ]=ndgrid(values);
+% [ v{1:n} ]=ndgrid(values,2*values);
+[ v{1:n} ]=ndgrid(values{:});
 theta(:,:) =cell2mat(cellfun(@(x) reshape(x,[],1),v,'UniformOutput',0))';
 
 lambda=zeros(n,size(theta,2),M);
@@ -125,13 +134,13 @@ for i=1:M
     for cur_theta=1:size(theta,2)
         % QUADPROG(H,f,A,b,Aeq,beq,LB,UB,X0)
         [u(:,i) ,J(:,i),~,~,l] = quadprog(H(:,:,i), f(:,:,i), ...
-                                          eye(ni*n), theta(:,cur_theta), ...
+                                          Gamma_bar, theta(:,cur_theta), ...
                                           [], [], ...
                                           umin(:,i)*ones(ni*n,1), ...  % Lower Bound
                                           umax(:,i)*ones(ni*n,1), ...  % Upper Bound
                                           [], options);
         % [u(:,i) ,J(:,i),~,~,l] = quadprog(H(:,:,i), f(:,:,i), ...
-        %                                   eye(ni*n), min(max(theta(:,cur_theta),umin(:,i)),umax(:,i)), ...
+        %                                   Gamma_bar, min(max(theta(:,cur_theta),umin(:,i)),umax(:,i)), ...
         %                                   [], [], ...
         %                                   umin(:,i)*ones(ni*n,1), ...  % Lower Bound
         %                                   umax(:,i)*ones(ni*n,1), ...  % Upper Bound
@@ -157,26 +166,6 @@ for i=1:M
 end
 end
 
-% Get only lambdas different from zero
-% for i=1:M
-% suberror=1e-4;
-% colIdx=find(sum(lambda(:,:,i)>suberror)==size(lambda(:,:,i),1));
-% lambda_est=paren(lambda(:,:,i),':',colIdx);
-% theta_est=paren(theta,':',colIdx);
-
-% figure
-% for j=1:size(lambda,1)
-%     sgtitle([' System ' num2str(i) ' normal behavior no $\lambda=0$'],'interpreter','latex')
-%     subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
-%     scatter3(theta_est(1,:),theta_est(2,:),lambda_est(j,:));
-% view(135,30)
-%     title(['$\lambda_{' num2str(j) '}$ '],'interpreter','latex')
-%     xlabel('$\theta_1$','interpreter','latex')
-%     ylabel('$\theta_2$','interpreter','latex')
-% end
-% end
-
-
 %%%
 %% Simulate
 % u=ones(1,n);
@@ -186,7 +175,7 @@ end
 % let's suppose $\tilde{\vec{\lambda}}=T\vec{\lambda}$
 
 T = (10*rand([size(lambda,1) size(lambda,1) M]));
-% T = 20*eye(n)
+% T = repmat(20*(eye(n)),1,1,2)
 % T = diag(fix(20*rand(1,n)));
 % T=T+2*eye(size(lambda,1))
 for i=M:-1:1
@@ -212,22 +201,34 @@ end
 %% === ESTIMATION ===
 modes=2^n;
 PI=repmat(1/modes,1,modes);
-emMaxIter=100;
+emMaxIter=200;
 maxErr=1e-8;
 X=theta;
 Y=lambda(:,:,1);
 
-Phi_init=20*rand(modes,n^2+n);
+%= Initialize estimation
+P_1=[1/(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).') 0; 0 0]
+P_2=[0 0; 0 1/(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).');]
+P_complet=inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar);
+s_complet=P_complet*Gamma_bar*inv(H(:,:,1))*f;
+Phi_init_orig=[P_complet(:)' s_complet';
+          P_1(:).' inv(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).')*Gamma_bar(1,:)*inv(H(:,:,1))*f 0;
+          P_2(:).' 0 inv(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).')*Gamma_bar(2,:)*inv(H(:,:,1))*f;
+          zeros(1,n*n+n);
+         ]
+Phi_init=Phi_init_orig+2*rand(size(Phi_init_orig))
+% Phi_init=1*rand(modes,n^2+n);
 
 %= Estimate normal behavior
 % [Phi,Responsabilities,~, ~] = emgm_Nestimate (X,Y,[],modes,emMaxIter,maxErr);
-[Phi,Responsabilities,~, ~] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+[Phi,Responsabilities,pi_new, Sigma] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+Phi=Phi;
 Estimated=Phi(1,:);
 Real=[H(:)' f(:)'];
 
 % NOTE(accacio): only if values have zero
 index_of_zero=find(sum(theta==zeros(size(theta)))==n);
-% index_of_zero=1;
+index_of_zero=1;
 [~, z_hat_zero]=max(Responsabilities(:,index_of_zero)); %#ok
 zero_params=Phi(z_hat_zero,:);
 H_est=reshape(zero_params(1:n^2),n,n)';
@@ -238,40 +239,72 @@ display(H);
 display(f_est);
 display(f);
 
+
+P_1_tilde=T(:,:,1)*[1/(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).') 0; 0 0]
+P_2_tilde=T(:,:,1)*[0 0; 0 1/(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).');]
+P_complet_tilde=T(:,:,1)*inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar);
+s_complet_tilde=T(:,:,1)*P_complet*Gamma_bar*inv(H(:,:,1))*f;
+Phi_init_orig_tilde=[P_complet_tilde(:)' s_complet_tilde';
+          P_1_tilde(:).' s_complet_tilde(1) 0;
+          P_2_tilde(:).' 0 s_complet_tilde(2);
+          zeros(1,n*n+n);
+         ]
+Phi_init_tilde=Phi_init_orig_tilde+2*rand(size(Phi_init_orig_tilde))
+
+
 %= Estimate selfish behavior
 Y=lambda_tilde(:,:,1);
-[Phi_tilde,Responsabilities_tilde,~, Sigma_tilde] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+[Phi_tilde,Responsabilities_tilde,~, Sigma_tilde] = emgm_estimate (X,Y,Phi_init_tilde,modes,emMaxIter,maxErr);
 Estimated_tilde=Phi_tilde(1,:);
 Real_tilde=[(paren(T(:,:,1)*H(:,:,1),':'))' (paren(T(:,:,1)*f(:,:,1),':'))'];
 
-
-% NOTE(accacio): only if values have zero
-index_of_zero=find(sum(theta==zeros(size(theta)))==n);
+% % NOTE(accacio): only if values have zero
+% index_of_zero=find(sum(theta==zeros(size(theta)))==n);
 % index_of_zero=1;
 
-[~, z_hat_zero_tilde]=max(Responsabilities_tilde(:,index_of_zero));
-zero_params_tilde=Phi_tilde(z_hat_zero_tilde,:);
-H_est_tilde=reshape(zero_params_tilde(1:n^2),n,n)';
-display(H_est);
-display(T(:,:,1)*H(:,:,1));
-f_est=zero_params_tilde((n^2+1):end)';
-display(f_est);
-display(T(:,:,1)*f(:,:,1));
+% [~, z_hat_zero_tilde]=max(Responsabilities_tilde(:,index_of_zero));
+% zero_params_tilde=Phi_tilde(z_hat_zero_tilde,:);
+% H_est_tilde=reshape(zero_params_tilde(1:n^2),n,n)';
+% display(H_est_tilde);
+% H_tilde=T(:,:,1)*H(:,:,1);
+% display(H_tilde);
+% f_est=zero_params_tilde((n^2+1):end)';
+% display(f_est);
+% display(T(:,:,1)*f(:,:,1));
 
-
-invT_est=H(:,:,1)/(H_est_tilde);
-invT=inv(T(:,:,1));
-display(invT_est);
-display(invT);
+% invT_est=H(:,:,1)/(H_est_tilde);
+% invT=inv(T(:,:,1));
+% display(invT_est);
+% display(invT);
 toc
+
+% syms('P%d%d',[2 2])
+% invP=subexpr(inv(P))
+% Delta=det(P)
+% active_none=sym(zeros(2));
+% active_1=sym(zeros(2)); active=[1]; inactive=setdiff(1:2,active);
+% active_1(active,active)=subs(simplify(eval(adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P))),Delta,'Delta')
+% active_2=sym(zeros(2)); active=[2]; inactive=setdiff(1:2,active);
+% active_2(active,active)=subs(simplify(eval(adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P))),Delta,'Delta')
+
+% P=inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar.')
+% invP=inv(P)
+% active_1=zeros(n); active=[1]; inactive=setdiff(1:n,active);
+% adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P)
+% H_est
+% active_1(active,active)=adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P)
+% active_2=zeros(n); active=[2]; inactive=setdiff(1:n,active);
+% active_2(active,active)=adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P)
+% -det(P)/P(2,2,1)
 
 %%
 rgb=@(x,y,z) [x, y,z]/255;
-colors={ rgb( 84, 177, 159), ...
+colors={ rgb( 84, 177, 159),  ...
          rgb(217, 108,  25), ...
          rgb(211, 101, 159), ...
          rgb(128,  63, 189), ...
        };
+% #54B19F #D96C19 #D3659F #803FBD
 
 %= Plot normal Behavior
 if(doplots ==1 && size(theta,1)==2)
@@ -280,7 +313,7 @@ for component=1:n
     y=lambda(component,:);
     sgtitle('EM-GM Using MPC Data (Normal Behavior)','interpreter','latex')
     subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(x, y, responsabilities(:,:,component), C, d, colors);
+    plot_responsibles(X, y, Responsabilities, colors);
     view(135,30)
     title(['$\lambda_{' num2str(component) '}$' ],'interpreter','latex')
     xlabel('$\theta_1$','interpreter','latex')
@@ -295,7 +328,7 @@ for component=1:n
     y=lambda_tilde(component,:);
     sgtitle('EM-GM Using MPC Data (Cheating)','interpreter','latex');
     subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(x, y, responsabilities_cheat(:,:,component), C_cheat, d_cheat, colors);
+    plot_responsibles(X, y, Responsabilities_tilde, colors);
     view(135,30)
     title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
     xlabel('$\theta_1$','interpreter','latex')

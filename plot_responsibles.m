@@ -1,7 +1,7 @@
-function plot_responsibles(x, y, responsabilities, C, d,colors)
+function plot_responsibles(x, y, responsabilities, colors)
 % PLOT_RESPONSIBLES -
   [~,z_hat]=max(responsabilities,[],1);
-  M=size(d,3);
+  M=size(responsabilities,1);
   hold on
 
   % for i=1:M

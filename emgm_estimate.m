@@ -2,7 +2,7 @@ function [Phi,Responsabilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
 % EMGM_NESTIMATE - ESTIMATE N DIMENSIONAL
 
     Pi=repmat(1/modes,1,modes);
-    OldclusterSize=zeros(1,modes);
+    % OldclusterSize=zeros(1,modes);
     [n, ~]=size(X);
 
     if(isempty(phi_init))
@@ -28,37 +28,40 @@ function [Phi,Responsabilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
         Phi=phi_init;
     end
 
-    OldPhi=zeros(size(Phi));
-    % eps=100;
-    eps=10000;
+    % OldPhi=zeros(size(Phi));
+    OldPhi=Phi;
+    eps=10;
+    % eps=10000;
     Sigma(:,:,1:modes)=repmat(eps*eye(n),1,1,modes);
 
     for emInd=1:emMaxIter
 
         Responsabilities=calculate_responsabilities(X,Y,Phi,Sigma,Pi);
 
-        [Phi, pi_new] = update_parameters(X, Y, Responsabilities);
+        % Responsabilities(Responsabilities>=0.5)=1;
+        % Responsabilities(Responsabilities<0.5)=0;
+        [Phi, pi_new, Sigma] = update_parameters(X, Y, Phi, Responsabilities);
 
-        [~,z_hat]=max(Responsabilities,[],1);
-        for i=1:modes
-            z_i=find(z_hat==i);
-            clusterSize(i)=size(z_i,2);
-            if OldclusterSize(i)==clusterSize(i)
-                % Sigma(:,:,i)=Sigma(:,:,i)*.9;
-                Sigma(:,:,i)=Sigma(:,:,i)*.01;
-            else
-                Sigma(:,:,i)=Sigma(:,:,i)*1.;
-            end
-        end
+        % [~,z_hat]=max(Responsabilities,[],1);
+        % for i=1:modes
+        %     z_i=find(z_hat==i);
+        %     clusterSize(i)=size(z_i,2);
+        %     if OldclusterSize(i)==clusterSize(i)
+        %         % Sigma(:,:,i)=Sigma(:,:,i)*.9;
+        %         Sigma(:,:,i)=Sigma(:,:,i)*.01;
+        %     else
+        %         Sigma(:,:,i)=Sigma(:,:,i)*1.;
+        %     end
+        % end
 
-        % Phi
-        if sum(sum(sum(abs(Sigma)<maxErr,3)==modes*ones(n),2))==n^2
-            break;
-        end
+        % % Phi
+        % if sum(sum(sum(abs(Sigma)<maxErr,3)==modes*ones(n),2))==n^2
+        %     break;
+        % end
         if abs(OldPhi-Phi)<maxErr
             break;
         end
-        OldclusterSize=clusterSize;
+        % OldclusterSize=clusterSize;
         OldPhi=Phi;
     end
 end
