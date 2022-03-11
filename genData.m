@@ -81,8 +81,8 @@ Cmat_fun=@(sys, n) ...
     , tril(toeplitz(1:n))+1));
 
 %= H and f, such $\frac{1}{2}\vec{U}^TH\vec{U}+f^T\vec{U}$
-H_fun=@(Cmat,Q,R) round(Cmat'*Q*Cmat+R*eye(size(Q)),10);
-f_fun=@(Cmat,Mmat,Q,xt,Wt) Cmat'*Q*(Mmat*xt-Wt);
+H_fun=@(Cmat,Q,R) round(Cmat.'*Q*Cmat+R*eye(size(Q)),10);
+f_fun=@(Cmat,Mmat,Q,xt,Wt) Cmat.'*Q*(Mmat*xt-Wt);
 
 
 %= Prediction matrices for the systems
@@ -94,10 +94,10 @@ end
 clear -regexp [^f].*_fun % Delete all functions but f_fun
 
 %= Initial state and reference
-X0(:,1) = [21 3.2]';
-X0(:,2) = [20. 6.]';
-Wt(:,1) = [20]'; %#ok
-Wt(:,2) = [21]'; %#ok
+X0(:,1) = [21 3.2].';
+X0(:,2) = [20. 6.].';
+Wt(:,1) = [20].'; %#ok
+Wt(:,2) = [21].'; %#ok
 
 for i=M:-1:1
     f(:,:,i)=f_fun(Cmat(:,:,i),Mmat(:,:,i),Q(:,:,1),X0(:,i),Wt(:,i));
@@ -139,33 +139,9 @@ for i=1:M
                                           umin(:,i)*ones(ni*n,1), ...  % Lower Bound
                                           umax(:,i)*ones(ni*n,1), ...  % Upper Bound
                                           [], options);
-        % [u(:,i) ,J(:,i),~,~,l] = quadprog(H(:,:,i), f(:,:,i), ...
-        %                                   Gamma_bar, min(max(theta(:,cur_theta),umin(:,i)),umax(:,i)), ...
-        %                                   [], [], ...
-        %                                   umin(:,i)*ones(ni*n,1), ...  % Lower Bound
-        %                                   umax(:,i)*ones(ni*n,1), ...  % Upper Bound
-        %                                   [], options);
         lambda(:,cur_theta,i)=l.ineqlin;
     end
 end
-%%%
-%% Plots
-
-if(doplots==1 && size(theta,1)==2 )
-for i=1:M
-    figure
-    for j=1:size(lambda,1)
-        sgtitle([' System ' num2str(i) ' normal behavior'],'interpreter','latex')
-        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
-        scatter3(theta(1,:),theta(2,:),lambda(j,:,i),10,'filled');
-        view(135,30)
-        title(['$\lambda_{' num2str(j) '}$'],'interpreter','latex')
-        xlabel('$\theta_1$','interpreter','latex')
-        ylabel('$\theta_2$','interpreter','latex')
-    end
-end
-end
-
 %%%
 %% Simulate
 % u=ones(1,n);
@@ -179,24 +155,10 @@ T = (10*rand([size(lambda,1) size(lambda,1) M]));
 % T = diag(fix(20*rand(1,n)));
 % T=T+2*eye(size(lambda,1))
 for i=M:-1:1
-    T(:,:,i) = (T(:,:,i)+T(:,:,i)')/2;
+    T(:,:,i) = (T(:,:,i)+T(:,:,i).')/2;
     lambda_tilde(:,:,i) = T(:,:,i)*lambda(:,:,i);
 end
 
-if(doplots==1 && size(theta,1)==2)
-for i=1:M
-    figure
-    for j=1:size(lambda,1)
-        sgtitle([' System ' num2str(i) ' cheating'],'interpreter','latex')
-        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
-        scatter3(theta(1,:),theta(2,:),lambda_tilde(j,:,i),10,'filled');
-        view(135,30)
-        title(['$\tilde{\lambda}_{' num2str(j) '}$'],'interpreter','latex')
-        xlabel('$\theta_1$','interpreter','latex')
-        ylabel('$\theta_2$','interpreter','latex')
-    end
-end
-end
 
 %% === ESTIMATION ===
 modes=2^n;
@@ -204,59 +166,48 @@ PI=repmat(1/modes,1,modes);
 emMaxIter=200;
 maxErr=1e-8;
 X=theta;
-Y=lambda(:,:,1);
 
 %= Initialize estimation
-P_1=[1/(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).') 0; 0 0]
-P_2=[0 0; 0 1/(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).');]
-P_complet=inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar);
+P_1=[1/(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).') 0; 0 0].';
+P_2=[0 0; 0 1/(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).')].';
+P_complet=inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar).';
 s_complet=P_complet*Gamma_bar*inv(H(:,:,1))*f;
-Phi_init_orig=[P_complet(:)' s_complet';
+Phi_init_orig=[P_complet(:).' s_complet.';
           P_1(:).' inv(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).')*Gamma_bar(1,:)*inv(H(:,:,1))*f 0;
           P_2(:).' 0 inv(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).')*Gamma_bar(2,:)*inv(H(:,:,1))*f;
           zeros(1,n*n+n);
-         ]
-Phi_init=Phi_init_orig+2*rand(size(Phi_init_orig))
-% Phi_init=1*rand(modes,n^2+n);
+         ];
+Phi_init=Phi_init_orig+1.*rand(size(Phi_init_orig));
+% Phi_init=2*rand(modes,n^2+n);
 
 %= Estimate normal behavior
-Phi=Phi;
-Estimated=Phi(1,:);
-Real=[H(:)' f(:)'];
-
-% NOTE(accacio): only if values have zero
-index_of_zero=find(sum(theta==zeros(size(theta)))==n);
-index_of_zero=1;
-zero_params=Phi(z_hat_zero,:);
-H_est=reshape(zero_params(1:n^2),n,n)';
-f_est=zero_params(n^2+1:end)';
-
-display(H_est);
-display(H);
-display(f_est);
-display(f);
-
-
-P_1_tilde=T(:,:,1)*[1/(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).') 0; 0 0]
-P_2_tilde=T(:,:,1)*[0 0; 0 1/(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).');]
-P_complet_tilde=T(:,:,1)*inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar);
-s_complet_tilde=T(:,:,1)*P_complet*Gamma_bar*inv(H(:,:,1))*f;
-Phi_init_orig_tilde=[P_complet_tilde(:)' s_complet_tilde';
+Y=lambda(:,:,1);
 % [Phi,Responsibilities,~, ~] = emgm_Nestimate (X,Y,[],modes,emMaxIter,maxErr);
 [Phi,Responsibilities,pi_new, Sigma] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+Phi_init
+Phi_init_orig
+Phi
+
+P_1_tilde=(T(:,:,1)*P_1).';
+P_2_tilde=(T(:,:,1)*P_2).';
+P_complet_tilde=(T(:,:,1)*P_complet).';
+s_complet_tilde=T(:,:,1)*s_complet;
+Phi_init_orig_tilde=[P_complet_tilde(:).' s_complet_tilde.';
           P_1_tilde(:).' s_complet_tilde(1) 0;
           P_2_tilde(:).' 0 s_complet_tilde(2);
           zeros(1,n*n+n);
-         ]
-Phi_init_tilde=Phi_init_orig_tilde+2*rand(size(Phi_init_orig_tilde))
-
+         ];
+Phi_init_tilde=Phi_init_orig_tilde+1.*rand(size(Phi_init_orig_tilde));
+% Phi_init_tilde=2*rand(modes,n^2+n);
 
 %= Estimate selfish behavior
 Y=lambda_tilde(:,:,1);
-Estimated_tilde=Phi_tilde(1,:);
-Real_tilde=[(paren(T(:,:,1)*H(:,:,1),':'))' (paren(T(:,:,1)*f(:,:,1),':'))'];
 [Phi_tilde,Responsibilities_tilde,~, Sigma_tilde] = emgm_estimate (X,Y,Phi_init_tilde,modes,emMaxIter,maxErr);
+Phi_init_tilde
+Phi_init_orig_tilde
+Phi_tilde
 
+%
 % % NOTE(accacio): only if values have zero
 % index_of_zero=find(sum(theta==zeros(size(theta)))==n);
 % index_of_zero=1;
@@ -270,11 +221,11 @@ Real_tilde=[(paren(T(:,:,1)*H(:,:,1),':'))' (paren(T(:,:,1)*f(:,:,1),':'))'];
 
 % [~, z_hat_zero_tilde]=max(Responsibilities_tilde(:,index_of_zero));
 % zero_params_tilde=Phi_tilde(z_hat_zero_tilde,:);
-% H_est_tilde=reshape(zero_params_tilde(1:n^2),n,n)';
+% H_est_tilde=reshape(zero_params_tilde(1:n^2),n,n).';
 % display(H_est_tilde);
 % H_tilde=T(:,:,1)*H(:,:,1);
 % display(H_tilde);
-% f_est=zero_params_tilde((n^2+1):end)';
+% f_est=zero_params_tilde((n^2+1):end).';
 % display(f_est);
 % display(T(:,:,1)*f(:,:,1));
 
@@ -311,6 +262,40 @@ colors={ rgb( 84, 177, 159),  ...
          rgb(128,  63, 189), ...
        };
 % #54B19F #D96C19 #D3659F #803FBD
+
+%% Plots
+
+if(doplots==1 && size(theta,1)==2 )
+for i=1:M
+    figure
+    for j=1:size(lambda,1)
+        sgtitle([' System ' num2str(i) ' normal behavior'],'interpreter','latex')
+        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
+        scatter3(theta(1,:),theta(2,:),lambda(j,:,i),10,'filled');
+        view(135,30)
+        title(['$\lambda_{' num2str(j) '}$'],'interpreter','latex')
+        xlabel('$\theta_1$','interpreter','latex')
+        ylabel('$\theta_2$','interpreter','latex')
+    end
+end
+end
+
+
+if(doplots==1 && size(theta,1)==2)
+for i=1:M
+    figure
+    for j=1:size(lambda,1)
+        sgtitle([' System ' num2str(i) ' cheating'],'interpreter','latex')
+        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
+        scatter3(theta(1,:),theta(2,:),lambda_tilde(j,:,i),10,'filled');
+        view(135,30)
+        title(['$\tilde{\lambda}_{' num2str(j) '}$'],'interpreter','latex')
+        xlabel('$\theta_1$','interpreter','latex')
+        ylabel('$\theta_2$','interpreter','latex')
+    end
+end
+end
+
 
 %= Plot normal Behavior
 if(doplots ==1 && size(theta,1)==2)

@@ -6,9 +6,9 @@ function [Phi, pi_new, Sigma] = update_parameters(X, Y, OldPhi, Responsibilities
     A=kron(ones(n,1),eye(n));
     B=kron(eye(N),ones(1,n));
     C=kron(repmat(eye(n),1,N),ones(n,1));
-    theta=sparse([(A*X*B).*C;kron(repmat(eye(n),1,N),ones(1,1))]');
+    theta=sparse([(A*X*B).*C;kron(repmat(eye(n),1,N),ones(1,1))].');
 
-    y_cell = cellfun(@(x) x',mat2cell(Y',ones(1,N))','UniformOutput',0);
+    y_cell = cellfun(@(x) x.',mat2cell(Y.',ones(1,N)).','UniformOutput',0);
     y_diag=sparse(blkdiag(y_cell{:}));
 
 
@@ -21,8 +21,8 @@ function [Phi, pi_new, Sigma] = update_parameters(X, Y, OldPhi, Responsibilities
 
         Phi(i,:)=-((Gamma*theta)\(Gamma*Y(:)));
 
-        y_lin=reshape(theta*-Phi(i,:)',n,N);
-        y_lin_cell = cellfun(@(x) x',mat2cell(y_lin',ones(1,N))','UniformOutput',0);
+        y_lin=reshape(theta*-Phi(i,:).',n,N);
+        y_lin_cell = cellfun(@(x) x.',mat2cell(y_lin.',ones(1,N)).','UniformOutput',0);
         y_lin_diag=sparse(blkdiag(y_lin_cell{:}));
         err_diag=y_diag-y_lin_diag;
         sigma_weighted=err_diag*diag(responsibilities)*err_diag.';
