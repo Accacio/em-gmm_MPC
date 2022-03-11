@@ -220,8 +220,6 @@ Phi_init=Phi_init_orig+2*rand(size(Phi_init_orig))
 % Phi_init=1*rand(modes,n^2+n);
 
 %= Estimate normal behavior
-% [Phi,Responsabilities,~, ~] = emgm_Nestimate (X,Y,[],modes,emMaxIter,maxErr);
-[Phi,Responsabilities,pi_new, Sigma] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
 Phi=Phi;
 Estimated=Phi(1,:);
 Real=[H(:)' f(:)'];
@@ -229,7 +227,6 @@ Real=[H(:)' f(:)'];
 % NOTE(accacio): only if values have zero
 index_of_zero=find(sum(theta==zeros(size(theta)))==n);
 index_of_zero=1;
-[~, z_hat_zero]=max(Responsabilities(:,index_of_zero)); %#ok
 zero_params=Phi(z_hat_zero,:);
 H_est=reshape(zero_params(1:n^2),n,n)';
 f_est=zero_params(n^2+1:end)';
@@ -245,6 +242,8 @@ P_2_tilde=T(:,:,1)*[0 0; 0 1/(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).');]
 P_complet_tilde=T(:,:,1)*inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar);
 s_complet_tilde=T(:,:,1)*P_complet*Gamma_bar*inv(H(:,:,1))*f;
 Phi_init_orig_tilde=[P_complet_tilde(:)' s_complet_tilde';
+% [Phi,Responsibilities,~, ~] = emgm_Nestimate (X,Y,[],modes,emMaxIter,maxErr);
+[Phi,Responsibilities,pi_new, Sigma] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
           P_1_tilde(:).' s_complet_tilde(1) 0;
           P_2_tilde(:).' 0 s_complet_tilde(2);
           zeros(1,n*n+n);
@@ -254,15 +253,22 @@ Phi_init_tilde=Phi_init_orig_tilde+2*rand(size(Phi_init_orig_tilde))
 
 %= Estimate selfish behavior
 Y=lambda_tilde(:,:,1);
-[Phi_tilde,Responsabilities_tilde,~, Sigma_tilde] = emgm_estimate (X,Y,Phi_init_tilde,modes,emMaxIter,maxErr);
 Estimated_tilde=Phi_tilde(1,:);
 Real_tilde=[(paren(T(:,:,1)*H(:,:,1),':'))' (paren(T(:,:,1)*f(:,:,1),':'))'];
+[Phi_tilde,Responsibilities_tilde,~, Sigma_tilde] = emgm_estimate (X,Y,Phi_init_tilde,modes,emMaxIter,maxErr);
 
 % % NOTE(accacio): only if values have zero
 % index_of_zero=find(sum(theta==zeros(size(theta)))==n);
 % index_of_zero=1;
+% [~, z_hat_zero]=max(Responsibilities(:,index_of_zero)); %#ok
+% zero_params=Phi(z_hat_zero,:);
 
-% [~, z_hat_zero_tilde]=max(Responsabilities_tilde(:,index_of_zero));
+%
+% NOTE(accacio): only if values have zero
+% index_of_zero=find(sum(theta==zeros(size(theta)))==n);
+% index_of_zero=1;
+
+% [~, z_hat_zero_tilde]=max(Responsibilities_tilde(:,index_of_zero));
 % zero_params_tilde=Phi_tilde(z_hat_zero_tilde,:);
 % H_est_tilde=reshape(zero_params_tilde(1:n^2),n,n)';
 % display(H_est_tilde);
@@ -313,7 +319,7 @@ for component=1:n
     y=lambda(component,:);
     sgtitle('EM-GM Using MPC Data (Normal Behavior)','interpreter','latex')
     subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(X, y, Responsabilities, colors);
+    plot_responsibles(X, y, Responsibilities, colors);
     view(135,30)
     title(['$\lambda_{' num2str(component) '}$' ],'interpreter','latex')
     xlabel('$\theta_1$','interpreter','latex')
@@ -328,7 +334,7 @@ for component=1:n
     y=lambda_tilde(component,:);
     sgtitle('EM-GM Using MPC Data (Cheating)','interpreter','latex');
     subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(X, y, Responsabilities_tilde, colors);
+    plot_responsibles(X, y, Responsibilities_tilde, colors);
     view(135,30)
     title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
     xlabel('$\theta_1$','interpreter','latex')

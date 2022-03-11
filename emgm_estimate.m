@@ -1,4 +1,4 @@
-function [Phi,Responsabilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,emMaxIter,maxErr)
+function [Phi,Responsibilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,emMaxIter,maxErr)
 % EMGM_NESTIMATE - ESTIMATE N DIMENSIONAL
 
     Pi=repmat(1/modes,1,modes);
@@ -36,13 +36,22 @@ function [Phi,Responsabilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
 
     for emInd=1:emMaxIter
 
-        Responsabilities=calculate_responsabilities(X,Y,Phi,Sigma,Pi);
+        Responsibilities=calculate_responsibilities(X,Y,Phi,Sigma,Pi);
 
-        % Responsabilities(Responsabilities>=0.5)=1;
-        % Responsabilities(Responsabilities<0.5)=0;
-        [Phi, pi_new, Sigma] = update_parameters(X, Y, Phi, Responsabilities);
-
-        % [~,z_hat]=max(Responsabilities,[],1);
+        % newR=Responsibilities./max(Responsibilities)
+        % newR(newR>=0.5)=1;
+        % newR(newR<0.5)=0;
+        % Responsibilities=newR;
+        % Responsibilities(Responsibilities<0.5)=0;
+        [Phi, pi_new, Sigma] = update_parameters(X, Y, Phi, Responsibilities);
+        % [Phi, pi_new, ~] = update_parameters(X, Y, Phi, Responsibilities);
+        % Phi
+        % Responsibilities
+        % if (sum(sum(isnan(Phi))) | sum(sum(sum(isnan(Sigma)))) | sum(sum(isnan(pi_new))))
+        %     disp('t')
+        % end
+        
+        % [~,z_hat]=max(Responsibilities,[],1);
         % for i=1:modes
         %     z_i=find(z_hat==i);
         %     clusterSize(i)=size(z_i,2);
@@ -58,10 +67,13 @@ function [Phi,Responsabilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
         % if sum(sum(sum(abs(Sigma)<maxErr,3)==modes*ones(n),2))==n^2
         %     break;
         % end
+
         if abs(OldPhi-Phi)<maxErr
-            break;
+            disp(['Converged after ' num2str(emInd) ' iter'])
+            return;
         end
         % OldclusterSize=clusterSize;
         OldPhi=Phi;
     end
+    disp(['Max iterations reached'])
 end

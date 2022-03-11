@@ -1,4 +1,4 @@
-function Responsabilities = calculate_responsabilities(x, y, Phi, Sigma, Pi)
+function Responsibilities = calculate_responsibilities(x, y, Phi, Sigma, Pi)
     %% modes x N responsability matrix
     modes=size(Phi,1);
     [n, N]=size(x);
@@ -24,6 +24,6 @@ function Responsabilities = calculate_responsabilities(x, y, Phi, Sigma, Pi)
         respNum(:,i)=sparse(Pi(1,i)*(1/(2*pi)^(n/2))*(1/sqrt(det(Sigma(:,:,i))))*exp(-1/2*max(err_diag'*SigmaInvMat*err_diag))');
     end
     normalizing_constant=sum(respNum,2);
-    Responsabilities =(respNum./normalizing_constant)';
+    Responsibilities =(respNum./normalizing_constant).';
 
 end
