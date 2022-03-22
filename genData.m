@@ -185,7 +185,7 @@ Phi_init=Phi_init_orig+1.*rand(size(Phi_init_orig));
 %= Estimate normal behavior
 Y=lambda(:,:,1);
 % [Phi,Responsibilities,~, ~] = emgm_Nestimate (X,Y,[],modes,emMaxIter,maxErr);
-[Phi,Responsibilities,pi_new, Sigma] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+[Phi,Responsibilities,pi_new, Sigma,loglikelihood,info] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
 Phi_init
 Phi_init_orig
 Phi
@@ -207,7 +207,7 @@ Phi_init_tilde=Phi_init_orig_tilde+1.*rand(size(Phi_init_orig_tilde));
 
 %= Estimate selfish behavior
 Y=lambda_tilde(:,:,1);
-[Phi_tilde,Responsibilities_tilde,~, Sigma_tilde] = emgm_estimate (X,Y,Phi_init_tilde,modes,emMaxIter,maxErr);
+[Phi_tilde,Responsibilities_tilde,~,Sigma_tilde,loglikelihood_tilde,info_tilde] = emgm_estimate (X,Y,Phi_init_tilde,modes,emMaxIter,maxErr);
 Phi_init_tilde
 Phi_init_orig_tilde
 Phi_tilde
@@ -310,3 +310,10 @@ for component=1:n
     ylabel('$\theta_2$','interpreter','latex')
 end
 end
+
+figure
+plot(1:info.step,loglikelihood(1:info.step))
+title(['Log-likelihood (Normal Behavior)' ],'interpreter','latex')
+figure
+plot(1:info_tilde.step,loglikelihood_tilde(1:info_tilde.step))
+title(['Log-likelihood (Cheating)' ],'interpreter','latex')

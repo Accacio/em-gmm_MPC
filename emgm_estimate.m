@@ -34,6 +34,7 @@ function [Phi,Responsibilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
     % eps=10000;
     Sigma(:,:,1:modes)=repmat(eps*eye(n),1,1,modes);
 
+    loglikelihood = zeros(emMaxIter);
     for emInd=1:emMaxIter
 
         Responsibilities=calculate_responsibilities(X,Y,Phi,Sigma,Pi);
@@ -44,6 +45,7 @@ function [Phi,Responsibilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
         % Responsibilities=newR;
         % Responsibilities(Responsibilities<0.5)=0;
         [Phi, pi_new, Sigma] = update_parameters(X, Y, Phi, Responsibilities);
+        loglikelihood(emInd) = calculate_loglikelihood(X,Y,Phi,Sigma,Pi);
         % [Phi, pi_new, ~] = update_parameters(X, Y, Phi, Responsibilities);
         % Phi
         % Responsibilities
@@ -69,11 +71,14 @@ function [Phi,Responsibilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
         % end
 
         if norm(OldPhi-Phi,'fro')<maxErr
+        % if emInd>1 && abs(loglikelihood(emInd)-loglikelihood(emInd-1))<maxErr
             disp(['Converged after ' num2str(emInd) ' iter'])
+            info.step = emInd;
             return;
         end
         % OldclusterSize=clusterSize;
         OldPhi=Phi;
     end
+    info.step = emInd;
     disp(['Max iterations reached'])
 end
