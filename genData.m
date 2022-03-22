@@ -248,38 +248,35 @@ colors={ rgb( 84, 177, 159),  ...
 % #54B19F #D96C19 #D3659F #803FBD
 
 %% Plots
+% if(doplots==1 && size(theta,1)==2 )
+% for i=1:M
+%     figure
+%     for j=1:size(lambda,1)
+%         sgtitle([' System ' num2str(i) ' normal behavior'],'interpreter','latex')
+%         subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
+%         scatter3(theta(1,:),theta(2,:),lambda(j,:,i),10,'filled');
+%         view(135,30)
+%         title(['$\lambda_{' num2str(j) '}$'],'interpreter','latex')
+%         xlabel('$\theta_1$','interpreter','latex')
+%         ylabel('$\theta_2$','interpreter','latex')
+%     end
+% end
+% end
 
-if(doplots==1 && size(theta,1)==2 )
-for i=1:M
-    figure
-    for j=1:size(lambda,1)
-        sgtitle([' System ' num2str(i) ' normal behavior'],'interpreter','latex')
-        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
-        scatter3(theta(1,:),theta(2,:),lambda(j,:,i),10,'filled');
-        view(135,30)
-        title(['$\lambda_{' num2str(j) '}$'],'interpreter','latex')
-        xlabel('$\theta_1$','interpreter','latex')
-        ylabel('$\theta_2$','interpreter','latex')
-    end
-end
-end
-
-
-if(doplots==1 && size(theta,1)==2)
-for i=1:M
-    figure
-    for j=1:size(lambda,1)
-        sgtitle([' System ' num2str(i) ' cheating'],'interpreter','latex')
-        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
-        scatter3(theta(1,:),theta(2,:),lambda_tilde(j,:,i),10,'filled');
-        view(135,30)
-        title(['$\tilde{\lambda}_{' num2str(j) '}$'],'interpreter','latex')
-        xlabel('$\theta_1$','interpreter','latex')
-        ylabel('$\theta_2$','interpreter','latex')
-    end
-end
-end
-
+% if(doplots==1 && size(theta,1)==2)
+% for i=1:M
+%     figure
+%     for j=1:size(lambda,1)
+%         sgtitle([' System ' num2str(i) ' cheating'],'interpreter','latex')
+%         subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),j)
+%         scatter3(theta(1,:),theta(2,:),lambda_tilde(j,:,i),10,'filled');
+%         view(135,30)
+%         title(['$\tilde{\lambda}_{' num2str(j) '}$'],'interpreter','latex')
+%         xlabel('$\theta_1$','interpreter','latex')
+%         ylabel('$\theta_2$','interpreter','latex')
+%     end
+% end
+% end
 
 %= Plot normal Behavior
 if(doplots ==1 && size(theta,1)==2)
