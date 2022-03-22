@@ -1,4 +1,4 @@
-function [Phi,Responsibilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,emMaxIter,maxErr)
+function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(X,Y,phi_init,modes,emMaxIter,maxErr)
 % EMGM_NESTIMATE - ESTIMATE N DIMENSIONAL
 
     Pi=repmat(1/modes,1,modes);
