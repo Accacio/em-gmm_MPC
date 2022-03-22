@@ -213,20 +213,17 @@ Phi_init_orig_tilde
 Phi_tilde
 norm(Phi_tilde-Phi_init_orig_tilde,'fro')
 
-%
-% % NOTE(accacio): only if values have zero
+% NOTE(accacio): only if values have zero
 % index_of_zero=find(sum(theta==zeros(size(theta)))==n);
 % index_of_zero=1;
 % [~, z_hat_zero]=max(Responsibilities(:,index_of_zero)); %#ok
 % zero_params=Phi(z_hat_zero,:);
 
-%
-% NOTE(accacio): only if values have zero
 % index_of_zero=find(sum(theta==zeros(size(theta)))==n);
 % index_of_zero=1;
-
 % [~, z_hat_zero_tilde]=max(Responsibilities_tilde(:,index_of_zero));
 % zero_params_tilde=Phi_tilde(z_hat_zero_tilde,:);
+
 % H_est_tilde=reshape(zero_params_tilde(1:n^2),n,n).';
 % display(H_est_tilde);
 % H_tilde=T(:,:,1)*H(:,:,1);
