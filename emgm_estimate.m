@@ -68,7 +68,7 @@ function [Phi,Responsibilities,pi_new,Sigma] = emgm_estimate(X,Y,phi_init,modes,
         %     break;
         % end
 
-        if abs(OldPhi-Phi)<maxErr
+        if norm(OldPhi-Phi,'fro')<maxErr
             disp(['Converged after ' num2str(emInd) ' iter'])
             return;
         end
