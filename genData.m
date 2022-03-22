@@ -189,6 +189,7 @@ Y=lambda(:,:,1);
 Phi_init
 Phi_init_orig
 Phi
+norm(Phi-Phi_init_orig,'fro')
 
 P_1_tilde=(T(:,:,1)*P_1).';
 P_2_tilde=(T(:,:,1)*P_2).';
@@ -210,6 +211,7 @@ Y=lambda_tilde(:,:,1);
 Phi_init_tilde
 Phi_init_orig_tilde
 Phi_tilde
+norm(Phi_tilde-Phi_init_orig_tilde,'fro')
 
 %
 % % NOTE(accacio): only if values have zero
