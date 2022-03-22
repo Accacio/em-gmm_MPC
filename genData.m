@@ -238,25 +238,6 @@ norm(Phi_tilde-Phi_init_orig_tilde,'fro')
 % display(invT);
 toc
 
-% syms('P%d%d',[2 2])
-% invP=subexpr(inv(P))
-% Delta=det(P)
-% active_none=sym(zeros(2));
-% active_1=sym(zeros(2)); active=[1]; inactive=setdiff(1:2,active);
-% active_1(active,active)=subs(simplify(eval(adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P))),Delta,'Delta')
-% active_2=sym(zeros(2)); active=[2]; inactive=setdiff(1:2,active);
-% active_2(active,active)=subs(simplify(eval(adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P))),Delta,'Delta')
-
-% P=inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar.')
-% invP=inv(P)
-% active_1=zeros(n); active=[1]; inactive=setdiff(1:n,active);
-% adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P)
-% H_est
-% active_1(active,active)=adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P)
-% active_2=zeros(n); active=[2]; inactive=setdiff(1:n,active);
-% active_2(active,active)=adjoint(invP(active,active)).'./det(P(inactive,inactive))*det(P)
-% -det(P)/P(2,2,1)
-
 %%
 rgb=@(x,y,z) [x, y,z]/255;
 colors={ rgb( 84, 177, 159),  ...
