@@ -1,8 +1,8 @@
-function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(X,Y,phi_init,modes,emMaxIter,maxErr)
+function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(X,Y,phi_init,sigma_init,modes,emMaxIter,maxErr)
 % EMGM_NESTIMATE - ESTIMATE N DIMENSIONAL
 
     Pi=repmat(1/modes,1,modes);
-    % OldclusterSize=zeros(1,modes);
+    OldclusterSize=zeros(1,modes);
     [n, ~]=size(X);
 
     if(isempty(phi_init))
@@ -30,22 +30,29 @@ function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(
 
     % OldPhi=zeros(size(Phi));
     OldPhi=Phi;
-    eps=10;
-    % eps=10000;
-    Sigma(:,:,1:modes)=repmat(eps*eye(n),1,1,modes);
 
-    loglikelihood = zeros(emMaxIter);
+    if(isempty(sigma_init))
+        eps=10;
+        % eps=10000;
+        Sigma(:,:,1:modes)=repmat(eps*eye(n),1,1,modes);
+    else
+        % Sigma=reshape(kron(sigma_init,eye(n)),n,n,modes)
+        Sigma=sigma_init;
+    end
+
+    loglikelihood = zeros(1,emMaxIter);
     for emInd=1:emMaxIter
 
         Responsibilities=calculate_responsibilities(X,Y,Phi,Sigma,Pi);
-
         % newR=Responsibilities./max(Responsibilities)
         % newR(newR>=0.5)=1;
         % newR(newR<0.5)=0;
         % Responsibilities=newR;
         % Responsibilities(Responsibilities<0.5)=0;
         [Phi, pi_new, Sigma] = update_parameters(X, Y, Phi, Responsibilities);
-        loglikelihood(emInd) = calculate_loglikelihood(X,Y,Phi,Sigma,Pi);
+        Pi=pi_new;
+        loglikelihood(emInd) = calculate_loglikelihood(X,Y,Phi,Sigma,pi_new);
+
         % [Phi, pi_new, ~] = update_parameters(X, Y, Phi, Responsibilities);
         % Phi
         % Responsibilities
@@ -65,14 +72,25 @@ function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(
         %     end
         % end
 
-        % % Phi
-        % if sum(sum(sum(abs(Sigma)<maxErr,3)==modes*ones(n),2))==n^2
-        %     break;
+        % sigma_converged=1;
+        % for i=1:modes
+        %     sigma_converged= sigma_converged & Sigma(1,1,1)<maxErr;
+        % end
+        % if sigma_converged
+        %     disp(['Sigma converged after ' num2str(emInd) ' iter'])
+        %     info.step = emInd;
+        %     return;
         % end
 
         if norm(OldPhi-Phi,'fro')<maxErr
         % if emInd>1 && abs(loglikelihood(emInd)-loglikelihood(emInd-1))<maxErr
-            disp(['Converged after ' num2str(emInd) ' iter'])
+            disp(['Phi Converged after ' num2str(emInd) ' iter'])
+            info.step = emInd;
+            return;
+        end
+
+        if emInd>1 && abs(loglikelihood(emInd)-loglikelihood(emInd-1))<maxErr
+            disp(['loglikelihood Converged after ' num2str(emInd) ' iter'])
             info.step = emInd;
             return;
         end
@@ -80,5 +98,5 @@ function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(
         OldPhi=Phi;
     end
     info.step = emInd;
-    disp(['Max iterations reached'])
+    % disp(['Max iterations reached'])
 end
