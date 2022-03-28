@@ -94,7 +94,7 @@ for small_em=1:repeat_small_em
         [Phi_tilde_pre(:,:,i),Responsibilities_tilde,~,Sigma_tilde(:,:,:,i),loglikelihood_tilde,info_tilde] = emgm_estimate (X,Y,Phi_init_tilde,[],modes,emMaxIter_pre,maxErr_pre);
         loglikelihoods_tilde_pre(:,i)=loglikelihood_tilde(info_tilde.step);
     end
-   %
+    %
     % save phi with best log-likelihood
     [~, indices] = sort(loglikelihoods_tilde_pre);
     Phi_init_chosen_tilde(:,:,small_em)=Phi_tilde_pre(:,:,indices(end));
@@ -183,32 +183,32 @@ colors={ rgb( 84, 177, 159),  ...
 
 %= Plot normal Behavior
 if(doplots ==1 && size(theta,1)==2)
-figure
-for component=1:n
-    y=lambda(component,:);
-    sgtitle('EM-GM Using MPC Data (Normal Behavior)','interpreter','latex')
-    subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(X, y, Responsibilities, colors);
-    view(135,30)
-    title(['$\lambda_{' num2str(component) '}$' ],'interpreter','latex')
-    xlabel('$\theta_1$','interpreter','latex')
-    ylabel('$\theta_2$','interpreter','latex')
-end
+    figure
+    for component=1:n
+        y=lambda(component,:);
+        sgtitle('EM-GM Using MPC Data (Normal Behavior)','interpreter','latex')
+        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
+        plot_responsibles(X, y, Responsibilities, colors);
+        view(135,30)
+        title(['$\lambda_{' num2str(component) '}$' ],'interpreter','latex')
+        xlabel('$\theta_1$','interpreter','latex')
+        ylabel('$\theta_2$','interpreter','latex')
+    end
 end
 
 %= Plot cheating
 if(doplots ==1 && size(theta,1)==2)
-figure
-for component=1:n
-    y=lambda_tilde(component,:);
-    sgtitle('EM-GM Using MPC Data (Cheating)','interpreter','latex');
-    subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(X, y, Responsibilities_tilde, colors);
-    view(135,30)
-    title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
-    xlabel('$\theta_1$','interpreter','latex')
-    ylabel('$\theta_2$','interpreter','latex')
-end
+    figure
+    for component=1:n
+        y=lambda_tilde(component,:);
+        sgtitle('EM-GM Using MPC Data (Cheating)','interpreter','latex');
+        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
+        plot_responsibles(X, y, Responsibilities_tilde, colors);
+        view(135,30)
+        title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
+        xlabel('$\theta_1$','interpreter','latex')
+        ylabel('$\theta_2$','interpreter','latex')
+    end
 end
 
 figure
