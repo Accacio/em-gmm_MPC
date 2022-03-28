@@ -1,4 +1,4 @@
-function [Phi, pi_new, Sigma] = update_parameters(X, Y, OldPhi, Responsibilities)
+function [Phi, pi_new, Sigma] = em_update_parameters(X, Y, OldPhi, Responsibilities)
 % UPDATE_PARAMETERS -
     modes=size(Responsibilities,1);
     [n N]=size(X);

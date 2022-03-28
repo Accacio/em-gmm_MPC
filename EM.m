@@ -6,7 +6,6 @@ doplots=1; %= do plots?
 
 genData
 
-
 %% === ESTIMATION ===
 modes=2^n;
 PI=repmat(1/modes,1,modes);
@@ -22,17 +21,17 @@ s_complet=P_complet*Gamma_bar*inv(H(:,:,1))*f;
 s_1=[inv(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).')*Gamma_bar(1,:)*inv(H(:,:,1))*f; 0];
 s_2=[0 ;inv(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).')*Gamma_bar(2,:)*inv(H(:,:,1))*f];
 Phi_init_orig=[P_complet(:).' s_complet.';
-          P_1(:).' s_1.';
-          P_2(:).' s_2.';
-          zeros(1,n*n+n);
-         ];
-Phi_init=Phi_init_orig+0.*rand(size(Phi_init_orig));
-% Phi_init=2*rand(modes,n^2+n);
+               P_1(:).' s_1.';
+               P_2(:).' s_2.';
+               zeros(1,n*n+n);
+              ];
+Phi_init=Phi_init_orig+1.*rand(size(Phi_init_orig));
 
 %= Estimate normal behavior
 tic
 Y=lambda(:,:,1);
-[Phi,Responsibilities,pi_new, Sigma,loglikelihood,info] = emgm_estimate (X,Y,Phi_init,modes,emMaxIter,maxErr);
+[Phi,Responsibilities,pi_new, Sigma,loglikelihood,info] = emgm_estimate (X,Y,Phi_init,[],modes,emMaxIter,maxErr);
+
 % Phi_init
 Phi_init_orig
 Phi
@@ -46,17 +45,16 @@ s_complet_tilde=T(:,:,1)*s_complet;
 s_1_tilde=T(:,:,1)*s_1;
 s_2_tilde=T(:,:,1)*s_2;
 Phi_init_orig_tilde=[P_complet_tilde(:).' s_complet_tilde.';
-          P_1_tilde(:).' s_1_tilde.';
-          P_2_tilde(:).' s_2_tilde.';
-          zeros(1,n*n+n);
-         ];
+                     P_1_tilde(:).' s_1_tilde.';
+                     P_2_tilde(:).' s_2_tilde.';
+                     zeros(1,n*n+n);
+                    ];
 Phi_init_tilde=Phi_init_orig_tilde+1.*rand(size(Phi_init_orig_tilde));
-% Phi_init_tilde=2*rand(modes,n^2+n);
 
 %= Estimate selfish behavior
 tic
 Y=lambda_tilde(:,:,1);
-[Phi_tilde,Responsibilities_tilde,~,Sigma_tilde,loglikelihood_tilde,info_tilde] = emgm_estimate (X,Y,Phi_init_tilde,modes,emMaxIter,maxErr);
+[Phi_tilde,Responsibilities_tilde,~,Sigma_tilde,loglikelihood_tilde,info_tilde] = emgm_estimate (X,Y,Phi_init_tilde,[],modes,emMaxIter,maxErr);
 % Phi_init_tilde
 Phi_init_orig_tilde
 Phi_tilde
@@ -105,32 +103,32 @@ colors={ rgb( 84, 177, 159),  ...
 
 %= Plot normal Behavior
 if(doplots ==1 && size(theta,1)==2)
-figure
-for component=1:n
-    y=lambda(component,:);
-    sgtitle('EM-GM Using MPC Data (Normal Behavior)','interpreter','latex')
-    subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(X, y, Responsibilities, colors);
-    view(135,30)
-    title(['$\lambda_{' num2str(component) '}$' ],'interpreter','latex')
-    xlabel('$\theta_1$','interpreter','latex')
-    ylabel('$\theta_2$','interpreter','latex')
-end
+    figure
+    for component=1:n
+        y=lambda(component,:);
+        sgtitle('EM-GM Using MPC Data (Normal Behavior)','interpreter','latex')
+        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
+        plot_responsibles(X, y, Responsibilities, colors);
+        view(135,30)
+        title(['$\lambda_{' num2str(component) '}$' ],'interpreter','latex')
+        xlabel('$\theta_1$','interpreter','latex')
+        ylabel('$\theta_2$','interpreter','latex')
+    end
 end
 
 %= Plot cheating
 if(doplots ==1 && size(theta,1)==2)
-figure
-for component=1:n
-    y=lambda_tilde(component,:);
-    sgtitle('EM-GM Using MPC Data (Cheating)','interpreter','latex');
-    subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
-    plot_responsibles(X, y, Responsibilities_tilde, colors);
-    view(135,30)
-    title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
-    xlabel('$\theta_1$','interpreter','latex')
-    ylabel('$\theta_2$','interpreter','latex')
-end
+    figure
+    for component=1:n
+        y=lambda_tilde(component,:);
+        sgtitle('EM-GM Using MPC Data (Cheating)','interpreter','latex');
+        subplot(round(sqrt(2)),round(sqrt(2))+1*(round(sqrt(2))<=floor(sqrt(2))),component)
+        plot_responsibles(X, y, Responsibilities_tilde, colors);
+        view(135,30)
+        title([' $\lambda_{' num2str(component) '}$' ],'interpreter','latex')
+        xlabel('$\theta_1$','interpreter','latex')
+        ylabel('$\theta_2$','interpreter','latex')
+    end
 end
 
 figure

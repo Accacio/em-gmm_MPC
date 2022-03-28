@@ -1,4 +1,4 @@
-function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(X,Y,phi_init,sigma_init,modes,emMaxIter,maxErr)
+function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = semgm_estimate(X,Y,phi_init,sigma_init,modes,emMaxIter,maxErr)
 % EMGM_NESTIMATE - ESTIMATE N DIMENSIONAL
 
     Pi=repmat(1/modes,1,modes);
@@ -49,9 +49,9 @@ function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(
         % newR(newR<0.5)=0;
         % Responsibilities=newR;
         % Responsibilities(Responsibilities<0.5)=0;
-        [Phi, pi_new, Sigma] = em_update_parameters(X, Y, Phi, Responsibilities);
+        [Phi, pi_new, Sigma] = sem_update_parameters(X, Y, Phi, Responsibilities);
         Pi=pi_new;
-        loglikelihood(emInd) = calculate_loglikelihood(X,Y,Phi,Sigma,pi_new);
+        loglikelihood(emInd) = sem_calculate_loglikelihood(X,Y,Phi,Sigma,pi_new);
 
         % [Phi, pi_new, ~] = update_parameters(X, Y, Phi, Responsibilities);
         % Phi
@@ -59,7 +59,7 @@ function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = emgm_estimate(
         % if (sum(sum(isnan(Phi))) | sum(sum(sum(isnan(Sigma)))) | sum(sum(isnan(pi_new))))
         %     disp('t')
         % end
-        
+
         % [~,z_hat]=max(Responsibilities,[],1);
         % for i=1:modes
         %     z_i=find(z_hat==i);
