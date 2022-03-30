@@ -51,7 +51,7 @@ function [Phi,Responsibilities,pi_new,Sigma,loglikelihood,info] = semgm_estimate
         % Responsibilities(Responsibilities<0.5)=0;
         [Phi, pi_new, Sigma] = sem_update_parameters(X, Y, Phi, Responsibilities);
         Pi=pi_new;
-        loglikelihood(emInd) = sem_calculate_loglikelihood(X,Y,Phi,Sigma,pi_new);
+        loglikelihood(emInd) = calculate_loglikelihood(X,Y,Phi,Sigma,pi_new);
 
         % [Phi, pi_new, ~] = update_parameters(X, Y, Phi, Responsibilities);
         % Phi

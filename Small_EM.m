@@ -7,6 +7,15 @@ doplots=1; %= do plots?
 
 genData
 
+%% === ESTIMATION ===
+modes=2^n;
+emMaxIter=200;
+n_small_em=10;
+repeat_small_em=10;
+maxErr=1e-8;
+emMaxIter_pre=2;
+maxErr_pre=1e-8;
+
 P_1=[1/(Gamma_bar(1,:)*inv(H(:,:,1))*Gamma_bar(1,:).') 0; 0 0].';
 P_2=[0 0; 0 1/(Gamma_bar(2,:)*inv(H(:,:,1))*Gamma_bar(2,:).')].';
 P_complet=inv(Gamma_bar*inv(H(:,:,1))*Gamma_bar).';
@@ -21,16 +30,7 @@ Phi_init_orig=[P_complet(:).' s_complet.';
 [~,indices]=sort(sum(Phi_init_orig.^2,2));
 Phi_init_orig=Phi_init_orig(flip(indices),:);
 
-%% === ESTIMATION ===
-modes=2^n;
-emMaxIter=200;
-n_small_em=50;
-repeat_small_em=10;
-maxErr=1e-8;
-emMaxIter_pre=2;
-maxErr_pre=1e-8;
-
-%= Initialize estimation
+%% = Estimate normal behavior
 X=theta;
 Y=lambda(:,:,1);
 tic
@@ -94,7 +94,7 @@ for small_em=1:repeat_small_em
         [Phi_tilde_pre(:,:,i),Responsibilities_tilde,~,Sigma_tilde(:,:,:,i),loglikelihood_tilde,info_tilde] = emgm_estimate (X,Y,Phi_init_tilde,[],modes,emMaxIter_pre,maxErr_pre);
         loglikelihoods_tilde_pre(:,i)=loglikelihood_tilde(info_tilde.step);
     end
-    %
+
     % save phi with best log-likelihood
     [~, indices] = sort(loglikelihoods_tilde_pre);
     Phi_init_chosen_tilde(:,:,small_em)=Phi_tilde_pre(:,:,indices(end));
@@ -115,6 +115,7 @@ Phi_init_chosen_em_tilde
 Phi_init_orig_tilde
 Phi_tilde
 norm(Phi_tilde-Phi_init_orig_tilde,'fro')
+toc
 
 % NOTE(accacio): only if values have zero
 % index_of_zero=find(sum(theta==zeros(size(theta)))==n);
@@ -139,7 +140,6 @@ norm(Phi_tilde-Phi_init_orig_tilde,'fro')
 % invT=inv(T(:,:,1));
 % display(invT_est);
 % display(invT);
-toc
 
 %%
 rgb=@(x,y,z) [x, y,z]/255;
